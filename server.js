@@ -7,11 +7,29 @@ import animeRoutes from './routes/anime.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const parsedPort = Number(process.env.PORT);
+const PORT = Number.isFinite(parsedPort) ? parsedPort : 5000;
+
+const allowedOrigins = new Set([
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://animix-frontend.vercel.app',
+]);
+
+if (process.env.CLIENT_URL) {
+  allowedOrigins.add(process.env.CLIENT_URL);
+}
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(express.json());
