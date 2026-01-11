@@ -10,27 +10,12 @@ const app = express();
 const parsedPort = Number(process.env.PORT);
 const PORT = Number.isFinite(parsedPort) ? parsedPort : 5000;
 
-const allowedOrigins = new Set([
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'https://animix-frontend.vercel.app',
-]);
-
-if (process.env.CLIENT_URL) {
-  allowedOrigins.add(process.env.CLIENT_URL);
-}
-
-// Middleware
+// Middleware - Allow all origins for now (can restrict later)
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.has(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
