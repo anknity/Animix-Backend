@@ -1,7 +1,38 @@
 import express from 'express';
+import axios from 'axios';
 import mangaService from '../services/mangaService.js';
 
 const router = express.Router();
+
+// Image proxy to bypass CORS/hotlinking restrictions
+router.get('/proxy/image', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ error: 'URL parameter required' });
+    }
+
+    // Only allow MangaDex image URLs
+    if (!url.startsWith('https://uploads.mangadex.org/') && !url.startsWith('https://mangadex.org/')) {
+      return res.status(403).json({ error: 'Invalid image URL' });
+    }
+
+    const response = await axios.get(url, {
+      responseType: 'arraybuffer',
+      headers: {
+        'Referer': 'https://mangadex.org/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    res.set('Content-Type', response.headers['content-type'] || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.send(response.data);
+  } catch (error) {
+    console.error('Error proxying image:', error.message);
+    res.status(500).json({ error: 'Failed to fetch image' });
+  }
+});
 
 router.get('/manga/trending', async (req, res) => {
   try {

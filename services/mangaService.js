@@ -10,7 +10,9 @@ const buildCoverUrl = (manga) => {
   const cover = manga?.relationships?.find((rel) => rel.type === 'cover_art');
   const fileName = cover?.attributes?.fileName;
   if (!fileName) return null;
-  return `${MANGADEX_UPLOAD}/covers/${manga.id}/${fileName}.512.jpg`;
+  const originalUrl = `${MANGADEX_UPLOAD}/covers/${manga.id}/${fileName}.512.jpg`;
+  // Return the original URL - frontend will use proxy if needed
+  return originalUrl;
 };
 
 const mapTags = (manga) => {
